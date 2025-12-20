@@ -2,7 +2,6 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-import re
 import time
 
 def fetch_bbc_international_news():
