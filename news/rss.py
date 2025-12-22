@@ -1,20 +1,7 @@
-# news/rss.py
 import requests
 import feedparser
 import certifi
 
-
-# def get_news(feed_url, limit=5):
-#     feed = feedparser.parse(feed_url)
-#     articles = []
-#
-#     for entry in feed.entries[:limit]:
-#         articles.append({
-#             "title": entry.title,
-#             "link": entry.link
-#         })
-#
-#     return articles
 
 def get_news(feed_url, limit=5):
     """
