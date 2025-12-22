@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "feeds": [
+    {
+      "id": "bbc",
+      "name": "BBC News",
+      "urls": [
+        "https://feeds.bbci.co.uk/news/rss.xml"
+      ]
+    },
+    {
+      "id": "pgplanet",
+      "name": "PostgreSQL Planet",
+      "urls": [
+        "https://planet.postgresql.org/rss20.xml"
+      ]
+    },
+    {
+      "id": "pginternal",
+      "name": "PG Internal",
+      "urls": [
+        "https://www.cybertec-postgresql.com/en/feed/"
+      ]
+    },
+    {
+      "id": "dbinternal",
+      "name": "Database Internals",
+      "urls": [
+        "https://www.databass.dev/rss.xml"
+      ]
+    }
+  ]
+}
