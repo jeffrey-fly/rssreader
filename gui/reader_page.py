@@ -2,19 +2,18 @@ from PySide6.QtWidgets import (
     QWidget,
     QListWidget,
     QListWidgetItem,
-    QTextBrowser,
     QHBoxLayout,
-    QVBoxLayout,
-    QLabel,
 )
 from PySide6.QtCore import Qt, QUrl
+from PySide6.QtWebEngineWidgets import QWebEngineView
 
 
 class ReaderPage(QWidget):
     """
-    RSS 阅读页：
+    RSS 阅读页（QWebEngineView 版）
+
     左侧：文章列表
-    右侧：内嵌阅读
+    右侧：内嵌网页阅读
     """
 
     def __init__(self, feed_store, rss_service, parent=None):
@@ -25,61 +24,56 @@ class ReaderPage(QWidget):
 
         self._init_ui()
         self._bind_signals()
+        self._show_message("请选择一个订阅")
 
-    # ---------------------------
+    # ---------------------
     # UI
-    # ---------------------------
+    # ---------------------
 
     def _init_ui(self):
-        self.setWindowTitle("RSS Reader")
-
         # 左侧：文章列表
         self.article_list = QListWidget()
-        self.article_list.setMinimumWidth(320)
+        self.article_list.setMinimumWidth(360)
         self.article_list.setWordWrap(True)
 
-        # 右侧：阅读区
-        self.reader = QTextBrowser()
-        self.reader.setOpenExternalLinks(False)
-        self.reader.setPlaceholderText("请选择一篇文章")
+        # 右侧：WebEngine
+        self.web_view = QWebEngineView()
 
-        # 主布局
         layout = QHBoxLayout(self)
         layout.addWidget(self.article_list, 2)
-        layout.addWidget(self.reader, 5)
+        layout.addWidget(self.web_view, 5)
 
     def _bind_signals(self):
         self.article_list.itemClicked.connect(self._on_article_clicked)
 
-    # ---------------------------
-    # Feed 入口（由 MainWindow 调用）
-    # ---------------------------
+    # ---------------------
+    # Public API (MainWindow 调用)
+    # ---------------------
 
     def load_feed_by_name(self, feed_name: str):
         """
-        MainWindow 调用这个方法
+        由 MainWindow 调用，根据 feed 名称加载文章
         """
         feed = next(
             (f for f in self.feed_store.all() if f["name"] == feed_name),
             None,
         )
         if not feed:
-            self.reader.setText(f"未找到订阅：{feed_name}")
+            self._show_message(f"未找到订阅：{feed_name}")
             return
 
         self._load_feed(feed)
 
-    # ---------------------------
-    # Feed 加载逻辑
-    # ---------------------------
+    # ---------------------
+    # Feed loading
+    # ---------------------
 
     def _load_feed(self, feed: dict):
         self.article_list.clear()
-        self.reader.clear()
 
         urls = feed.get("urls", [])
         if not urls:
-            self.reader.setText("该订阅未配置 URL")
+            self._show_message("该订阅未配置任何 RSS URL")
             return
 
         all_entries = []
@@ -92,10 +86,10 @@ class ReaderPage(QWidget):
                 print(f"[RSS] 加载失败 {url}: {e}")
 
         if not all_entries:
-            self.reader.setText("未获取到任何文章")
+            self._show_message("未获取到任何文章")
             return
 
-        # 可选：按发布时间排序（如果有）
+        # 按发布时间排序（字符串排序，够用）
         all_entries.sort(
             key=lambda e: e.get("published", ""),
             reverse=True,
@@ -104,9 +98,11 @@ class ReaderPage(QWidget):
         for entry in all_entries:
             self._add_article_item(entry)
 
-    # ---------------------------
-    # Article List
-    # ---------------------------
+        self._show_message("请选择一篇文章")
+
+    # ---------------------
+    # Article list
+    # ---------------------
 
     def _add_article_item(self, entry: dict):
         title = entry.get("title", "(no title)")
@@ -119,9 +115,7 @@ class ReaderPage(QWidget):
 
         item = QListWidgetItem(text)
         item.setToolTip(title)
-        item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
-        # 绑定业务数据
         item.setData(
             Qt.UserRole,
             {
@@ -134,9 +128,9 @@ class ReaderPage(QWidget):
 
         self.article_list.addItem(item)
 
-    # ---------------------------
-    # Article Click
-    # ---------------------------
+    # ---------------------
+    # Article click
+    # ---------------------
 
     def _on_article_clicked(self, item: QListWidgetItem):
         data = item.data(Qt.UserRole)
@@ -145,8 +139,28 @@ class ReaderPage(QWidget):
 
         link = data.get("link")
         if not link:
-            self.reader.setText("该文章没有可用链接")
+            self._show_message("该文章没有可用链接")
             return
 
-        # 内嵌打开原文
-        self.reader.setSource(QUrl(link))
+        self.web_view.load(QUrl(link))
+
+    # ---------------------
+    # Helper
+    # ---------------------
+
+    def _show_message(self, msg: str):
+        """
+        在 WebEngine 中显示提示信息（代替 QTextBrowser.setText）
+        """
+        html = f"""
+        <html>
+          <body style="
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 24px;
+            color: #444;
+          ">
+            <h3>{msg}</h3>
+          </body>
+        </html>
+        """
+        self.web_view.setHtml(html)
