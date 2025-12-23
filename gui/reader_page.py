@@ -147,15 +147,12 @@ class ReaderPage(QWidget):
         item = QListWidgetItem(text)
         item.setToolTip(title)
 
-        item.setData(
-            Qt.UserRole,
-            {
-                "title": title,
-                "link": link,
-                "published": published,
-                "entry": entry,
-            },
-        )
+        item.setData(Qt.ItemDataRole.UserRole, {
+            "title": title,
+            "link": link,
+            "published": published,
+            "entry": entry,
+        })
 
         self.article_list.addItem(item)
 
@@ -164,7 +161,7 @@ class ReaderPage(QWidget):
     # ---------------------
 
     def _on_article_clicked(self, item: QListWidgetItem):
-        data = item.data(Qt.UserRole)
+        data = item.data(Qt.ItemDataRole.UserRole)
         if not data:
             return
 
