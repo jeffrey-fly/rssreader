@@ -24,8 +24,9 @@ class WeatherPage(QWidget):
         super().__init__()
         loc = get_location_by_ip()
         self.city = loc.get("city")
+        if not self.city:
+            self.city = city
         self.service = WeatherService()
-
         self.city_label = QLabel()
         self.temp_label = QLabel()
         self.desc_label = QLabel()
@@ -37,7 +38,7 @@ class WeatherPage(QWidget):
             self.desc_label,
             self.humidity_label,
         ):
-            label.setAlignment(Qt.AlignCenter)
+            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.refresh_btn = QPushButton("刷新天气")
         self.refresh_btn.clicked.connect(self.load_weather)
