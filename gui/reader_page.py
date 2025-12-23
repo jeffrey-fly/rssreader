@@ -7,6 +7,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
+from core.reader_service import ReaderService
+
 
 class ReaderPage(QWidget):
     """
@@ -16,11 +18,15 @@ class ReaderPage(QWidget):
     右侧：内嵌网页阅读
     """
 
-    def __init__(self, feed_store, rss_service, parent=None):
+    def __init__(self, feed_store, rss_service, reader_service, parent=None):
         super().__init__(parent)
 
         self.feed_store = feed_store
         self.rss_service = rss_service
+        self.reader_service = reader_service
+
+        self._current_entry = None
+        self._reader_mode = False  # True=阅读模式，False=原文
 
         self._init_ui()
         self._bind_signals()
@@ -156,6 +162,39 @@ class ReaderPage(QWidget):
 
         self.article_list.addItem(item)
 
+    def set_reader_mode(self, enabled: bool):
+        if self._reader_mode == enabled:
+            return
+        self._reader_mode = enabled
+        self._reload_article()
+
+    def _load_reader_mode(self, link: str):
+        self._show_message("正在加载阅读模式…")
+
+        try:
+            html = self.reader_service.load_reader_html(link)
+        except Exception as e:
+            print("[ReaderMode] 失败:", e)
+            self._show_message("阅读模式失败，已回退到原文")
+            self.web_view.load(QUrl(link))
+            return
+
+        self.web_view.setHtml(html, QUrl(link))
+
+    def _reload_article(self):
+        if not self._current_entry:
+            return
+
+        link = self._current_entry.get("link")
+        if not link:
+            self._show_message("该文章没有可用链接")
+            return
+
+        if self._reader_mode:
+            self._load_reader_mode(link)
+        else:
+            self.web_view.load(QUrl(link))
+
     # ---------------------
     # Article click
     # ---------------------
@@ -165,12 +204,15 @@ class ReaderPage(QWidget):
         if not data:
             return
 
-        link = data.get("link")
-        if not link:
-            self._show_message("该文章没有可用链接")
-            return
+        self._current_entry = data
+        self._reload_article()
 
-        self.web_view.load(QUrl(link))
+        # link = data.get("link")
+        # if not link:
+        #     self._show_message("该文章没有可用链接")
+        #     return
+        #
+        # self.web_view.load(QUrl(link))
 
     # ---------------------
     # Helper

@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QAction
 
+from core.reader_service import ReaderService
 from services.feed_store import FeedStore
 from services.rss_service import RSSService
 
@@ -24,6 +25,7 @@ class MainWindow(QMainWindow):
         # =====================
         self.feed_store = FeedStore("feeds.json")
         self.rss_service = RSSService()
+        self.reader_service = ReaderService()
 
         # =====================
         # Central stack
@@ -37,6 +39,7 @@ class MainWindow(QMainWindow):
         self.reader_page = ReaderPage(
             feed_store=self.feed_store,
             rss_service=self.rss_service,
+            reader_service=self.reader_service
         )
         self.sub_page = SubscriptionPanel(
             feed_store=self.feed_store
