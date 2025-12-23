@@ -1,3 +1,4 @@
+import requests
 from PySide6.QtWidgets import (
     QWidget,
     QLabel,
@@ -9,11 +10,20 @@ from PySide6.QtCore import Qt
 from services.weather_service import WeatherService
 
 
+def get_location_by_ip():
+    resp = requests.get("https://ipapi.co/json/", timeout=5)
+    data = resp.json()
+    return {
+        "city": data.get("city"),
+        "lat": data.get("latitude"),
+        "lon": data.get("longitude"),
+    }
+
 class WeatherPage(QWidget):
     def __init__(self, city="Tokyo"):
         super().__init__()
-
-        self.city = city
+        loc = get_location_by_ip()
+        self.city = loc.get("city")
         self.service = WeatherService()
 
         self.city_label = QLabel()
