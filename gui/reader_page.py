@@ -36,6 +36,23 @@ class ReaderPage(QWidget):
         self.article_list.setMinimumWidth(360)
         self.article_list.setWordWrap(True)
 
+        self.article_list.setStyleSheet("""
+        QListWidget::item {
+            border-bottom: 1px solid #d0d0d0;
+            padding: 6px;
+        }
+
+        QListWidget::item:selected:active {
+            background: #cce4ff;
+            color: #000000;
+        }
+        
+        QListWidget::item:selected:!active {
+            background: #d9d9d9;
+            color: #000000;
+        }
+        """)
+
         # 右侧：WebEngine
         self.web_view = QWebEngineView()
 
