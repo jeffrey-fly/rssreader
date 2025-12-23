@@ -37,20 +37,34 @@ class ReaderPage(QWidget):
         self.article_list.setWordWrap(True)
 
         self.article_list.setStyleSheet("""
-        QListWidget::item {
-            border-bottom: 1px solid #d0d0d0;
-            padding: 6px;
-        }
+            QListWidget {
+                background: palette(base);
+                outline: none;
+            }
+            
+            QListWidget::item {
+                padding: 6px;
+                border-bottom: 1px solid palette(mid);
+                color: palette(text);
+            }
+            
+            /* 鼠标悬停 */
+            QListWidget::item:hover {
+                background: palette(alternate-base);
+            }
+            
+            /* 选中 + 有焦点 */
+            QListWidget::item:selected:active {
+                background: palette(highlight);
+                color: palette(highlighted-text);
+            }
+            
+            /* 选中 + 无焦点（关键，解决白底问题） */
+            QListWidget::item:selected:!active {
+                background: palette(midlight);
+                color: palette(text);
+            }
 
-        QListWidget::item:selected:active {
-            background: #cce4ff;
-            color: #000000;
-        }
-        
-        QListWidget::item:selected:!active {
-            background: #d9d9d9;
-            color: #000000;
-        }
         """)
 
         # 右侧：WebEngine
