@@ -28,6 +28,13 @@
       "urls": [
         "https://www.databass.dev/rss.xml"
       ]
+    },
+    {
+      "id": "myblog",
+      "name": "My Blog",
+      "urls": [
+        "https://jeffrey-fly-github-io.pages.dev/atom.xml"
+      ]
     }
   ]
 }
