@@ -20,6 +20,6 @@ class FeedStore:
     def all(self):
         return self.data["feeds"]
 
-    def add(self, name, url):
-        self.data["feeds"].append({"name": name, "url": url})
+    def add(self, feed):
+        self.data["feeds"].append({"id": feed["id"], "name": feed["name"], "urls": feed["urls"]})
         self.save()
