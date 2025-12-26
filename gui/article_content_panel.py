@@ -1,31 +1,56 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
 from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtCore import QUrl
+from PySide6.QtGui import QDesktopServices
 
 
 class ArticleContentPanel(QWidget):
-    """
-    使用 QWebEngineView 显示文章网页
-    """
     def __init__(self, parent=None):
         super().__init__(parent)
-        layout = QVBoxLayout(self)
-        self.webview = QWebEngineView()
-        layout.addWidget(self.webview)
 
-    def display_article(self, article):
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(8, 8, 8, 8)
+
+        # ---------- 顶部栏 ----------
+        header = QHBoxLayout()
+
+        self.title_label = QLabel("")
+        self.title_label.setStyleSheet("font-size: 18px; font-weight: bold;")
+
+        self.open_btn = QPushButton("原文")
+        self.open_btn.setEnabled(False)
+        self.open_btn.clicked.connect(self._open_in_browser)
+
+        header.addWidget(self.title_label)
+        header.addStretch()
+        header.addWidget(self.open_btn)
+
+        main_layout.addLayout(header)
+
+        # ---------- 内容 ----------
+        self.webview = QWebEngineView()
+        main_layout.addWidget(self.webview)
+
+        self._current_url = None
+
+    def display_article(self, article: dict):
         """
-        直接加载文章的 URL
-        article: dict, 包含 title, summary, link
+        article 必须包含:
+        - title
+        - link
         """
-        url = article.get("link", "")
+        self.title_label.setText(article.get("title", ""))
+
+        url = article.get("link")
         if url:
-            self.webview.load(url)
+            self._current_url = url
+            self.open_btn.setEnabled(True)
+            self.webview.load(QUrl(url))
         else:
-            # 没有 link 时显示摘要
-            html = f"""
-            <html><body>
-            <h2>{article['title']}</h2>
-            <div>{article.get('summary', '')}</div>
-            </body></html>
-            """
-            self.webview.setHtml(html)
+            self._current_url = None
+            self.open_btn.setEnabled(False)
+            self.webview.setHtml("<h3>无原文链接</h3>")
+
+    def _open_in_browser(self):
+        if self._current_url:
+            QDesktopServices.openUrl(QUrl(self._current_url))
