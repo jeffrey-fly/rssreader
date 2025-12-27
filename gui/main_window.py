@@ -6,19 +6,20 @@ from services.rss_service import RSSService
 
 from gui.rss_reader import RSSReaderWidget
 from gui.weather_page import WeatherPage
+from util.app_paths import FEEDS_FILE, APP_NAME
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("RSS Reader")
+        self.setWindowTitle(str(APP_NAME))
         self.showMaximized()  # 最大化窗口，占满屏幕（保留任务栏）
 
         # ----------------------
         # 核心服务
         # ----------------------
-        self.feed_store = FeedStore("feeds.json")
+        self.feed_store = FeedStore(FEEDS_FILE)
         self.rss_service = RSSService()
 
         # ----------------------
@@ -40,10 +41,10 @@ class MainWindow(QMainWindow):
 
     def _init_menu(self):
         menubar = self.menuBar()
-        view_menu = menubar.addMenu("视图")
+        view_menu = menubar.addMenu("view")
 
-        reader_action = QAction("阅读", self)
-        weather_action = QAction("天气", self)
+        reader_action = QAction("read", self)
+        weather_action = QAction("weather", self)
 
         reader_action.triggered.connect(
             lambda: self.stack.setCurrentWidget(self.reader_page)
